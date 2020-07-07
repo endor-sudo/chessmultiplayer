@@ -93,7 +93,7 @@ class Game():
                 if foreign_play!='0':
                     foreign_play=foreign_play.split(',')
                     print(foreign_play)
-                    foreign_play[0]=foreign_play[0][:2]+str((8-int(foreign_play[0][2:])))
+                    foreign_play[0]=foreign_play[0][:2]+str((7-int(foreign_play[0][2:])))
                     for piece in self.bpieces.sprites():
                         if piece.nature==foreign_play[0]:
                             piece.rect.centerx=int(foreign_play[1])
