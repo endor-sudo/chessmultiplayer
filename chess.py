@@ -94,23 +94,41 @@ class Game():
                     foreign_play=foreign_play.split(',')
                     print(foreign_play)
                     foreign_play[0]=foreign_play[0][:2]+str((7-int(foreign_play[0][2:])))
-                    for piece in self.bpieces.sprites():
-                        if piece.nature==foreign_play[0]:
-                            piece.rect.centerx=int(foreign_play[1])
-                            piece.rect.centery=int(foreign_play[2])
-                            break
-                    for piece in self.wpieces.sprites():
-                        if piece.nature==foreign_play[0]:
-                            piece.rect.centerx=int(foreign_play[1])
-                            piece.rect.centery=int(foreign_play[2])
-                            break
+                    if self.side=="whites":
+                        for otherpiece in self.bpieces.sprites():
+                            if foreign_play[0][:2] in ['wq','wk','bq','bk']:
+                                foreign_play[0]=foreign_play[0][:2]
+                                control=otherpiece.nature[:2]
+                            else:
+                                control=otherpiece.nature
+                            if control==foreign_play[0]:
+                                otherpiece.rect.centerx=int(foreign_play[1])
+                                otherpiece.rect.centery=int(foreign_play[2])
+                                for mypiece in self.wpieces.sprites():
+                                    if (mypiece.rect.centerx,mypiece.rect.centery)==(otherpiece.rect.centerx,otherpiece.rect.centery):
+                                        self.wpieces.remove(mypiece)
+                                break
+                    else:
+                        for otherpiece in self.wpieces.sprites():
+                            if foreign_play[0][:2] in ['wq','wk','bq','bk']:
+                                foreign_play[0]=foreign_play[0][:2]
+                                control=otherpiece.nature[:2]
+                            else:
+                                control=otherpiece.nature
+                            if control==foreign_play[0]:
+                                otherpiece.rect.centerx=int(foreign_play[1])
+                                otherpiece.rect.centery=int(foreign_play[2])
+                                for mypiece in self.bpieces.sprites():
+                                    if (mypiece.rect.centerx,mypiece.rect.centery)==(otherpiece.rect.centerx,otherpiece.rect.centery):
+                                        self.bpieces.remove(mypiece)
+                                break
             except Exception as e:
                 print('update_screen')
                 print(e)
             print('depois')
             for sq in self.grid.sprites():
                 sq.draw_sq()
-            if self.whites:
+            if self.side=='whites':
                 for piece in self.bpieces.sprites():
                     piece.blitme()
                 for piece in self.wpieces.sprites():
@@ -128,7 +146,7 @@ class Game():
                 for bpawn in range(8):
                     bpawn=Piece(self.screen,'bp.png',int(Game.square_size*bpawn+Game.square_size/2),int(Game.square_size*1+Game.square_size), 'bp'+str(bpawn))
                     self.bpieces.add(bpawn)
-                blackline=['br', 'bh', 'bb', 'bq', 'bk', 'bb', 'bh', 'br']
+                blackline=['br', 'bh', 'bb', 'bk', 'bq', 'bb', 'bh', 'br']
                 for bline in range(8):
                     bpiece=Piece(self.screen, str(blackline[bline])+'.png',int(Game.square_size*bline+Game.square_size/2),int(Game.square_size*1), str(blackline[bline])+str(bline))
                     self.bpieces.add(bpiece)
@@ -144,14 +162,14 @@ class Game():
                 for bpawn in range(8):
                     bpawn=Piece(self.screen,'bp.png',int(Game.square_size*bpawn+Game.square_size/2),int(Game.square_size*6+Game.square_size), 'bp'+str(bpawn))
                     self.bpieces.add(bpawn)
-                blackline=['br', 'bh', 'bb', 'bq', 'bk', 'bb', 'bh', 'br']
+                blackline=['br', 'bh', 'bb', 'bk', 'bq', 'bb', 'bh', 'br']
                 for bline in range(8):
                     bpiece=Piece(self.screen, str(blackline[bline])+'.png',int(Game.square_size*bline+Game.square_size/2),int(Game.square_size*8), str(blackline[bline])+str(bline))
                     self.bpieces.add(bpiece)
                 for wpawn in range(8):
                     wpawn=Piece(self.screen,'wp.png',int(Game.square_size*wpawn+Game.square_size/2),int(Game.square_size*1+Game.square_size), 'wp'+str(wpawn))
                     self.wpieces.add(wpawn)
-                whiteline=['wr', 'wh', 'wb', 'wq', 'wk', 'wb', 'wh', 'wr']
+                whiteline=['wr', 'wh', 'wb', 'wk', 'wq', 'wb', 'wh', 'wr']
                 for wline in range(8):
                     wpiece=Piece(self.screen, str(whiteline[wline])+'.png',int(Game.square_size*wline+Game.square_size/2),int(Game.square_size*1), str(whiteline[wline])+str(wline))
                     self.wpieces.add(wpiece)
@@ -169,21 +187,15 @@ class Game():
         #save tuple for eventual snapback
         try:
             base=(move.rect.centerx, move.rect.centery)
-        except UnboundLocalError:
-            pass
-        #drag's loop
-        while self.play:
-            pos=pygame.mouse.get_pos()
-            #drag sprite
-            try:
+            #drag's loop
+            while self.play:
+                pos=pygame.mouse.get_pos()
+                #drag sprite
                 move.rect.centerx, move.rect.centery=pos
-            except UnboundLocalError:
-                pass
-            for event in pygame.event.get():
-                if event.type == pygame.MOUSEBUTTONUP:
-                    #stop dragging sprite
-                    self.play=False
-                    try:
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        #stop dragging sprite
+                        self.play=False
                         #snap sprite onto square
                         for sq in self.grid.sprites():
                             if sq.rect.collidepoint((move.rect.centerx, move.rect.centery)):
@@ -197,22 +209,14 @@ class Game():
                         if move in self.wpieces:
                             pygame.sprite.groupcollide(self.wpieces, self.bpieces, False, True)
                         else:
-                            pygame.sprite.groupcollide(self.wpieces, self.bpieces, True, False)     
-                    except UnboundLocalError:
-                        pass
-                    self.server.send('move')
-            #makes turn
-            try:
-                if move in self.wpieces:
-                    self.whites=True
-                else:
-                    self.whites=False
-                make_play=str(move.nature)+','+str(Game.square_size*8-move.rect.centerx)+','+str(Game.square_size*8-move.rect.centery)
-                print(make_play)
-                self.server.send(make_play)
-                self.update_screen()
-            except UnboundLocalError:
-                        pass
+                            pygame.sprite.groupcollide(self.wpieces, self.bpieces, True, False)
+                        self.server.send('move')
+                    make_play=str(move.nature)+','+str(Game.square_size*8-move.rect.centerx)+','+str(Game.square_size*8-move.rect.centery)
+                    print(make_play)
+                    self.server.send(make_play)
+                    self.update_screen()
+        except UnboundLocalError:
+            pass
     
 
     def snap_back(self,move,base,sprite):
