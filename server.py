@@ -33,14 +33,10 @@ def client_thread(conn, player):
             print('reply:')
             print(reply)
             conn.sendall(str.encode(reply))
-
-            move= conn.recv(4096).decode('utf-8')
-            print('move:')
-            print(move)
-            if move=='move':
-                last_move[player] = conn.recv(4096).decode('utf-8')
-                print('last_move[player]:')
-                print(last_move[player])
+            
+            last_move[player] = conn.recv(4096).decode('utf-8')
+            print('last_move[player]:')
+            print(last_move[player])
         except Exception as e :
             print('client_thread')
             print(e)

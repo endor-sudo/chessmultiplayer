@@ -44,6 +44,7 @@ class Game():
         self.whites=True
         self.side=side
         self.server=n
+        self.last_move="0"
         #self.side="blacks"
     def run(self):
         while True:
@@ -56,7 +57,6 @@ class Game():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.play=True
                 self.moving()
-        self.server.send('nomove')
     def spawn_squares(self):
         if self.spawn:
             #spawn odd white and black squares
@@ -85,6 +85,10 @@ class Game():
             self.spawn_squares()
             self.spawn_pieces()
             self.spawn=False
+
+            print('self.server.send(self.last_move)')
+            self.server.send(self.last_move)
+            
             print('antes')
             try:
                 foreign_play=self.server.receive()
@@ -162,7 +166,7 @@ class Game():
                 for bpawn in range(8):
                     bpawn=Piece(self.screen,'bp.png',int(Game.square_size*bpawn+Game.square_size/2),int(Game.square_size*6+Game.square_size), 'bp'+str(bpawn))
                     self.bpieces.add(bpawn)
-                blackline=['br', 'bh', 'bb', 'bk', 'bq', 'bb', 'bh', 'br']
+                blackline=['br', 'bh', 'bb', 'bq', 'bk', 'bb', 'bh', 'br']
                 for bline in range(8):
                     bpiece=Piece(self.screen, str(blackline[bline])+'.png',int(Game.square_size*bline+Game.square_size/2),int(Game.square_size*8), str(blackline[bline])+str(bline))
                     self.bpieces.add(bpiece)
@@ -201,7 +205,7 @@ class Game():
                             if sq.rect.collidepoint((move.rect.centerx, move.rect.centery)):
                                 move.rect.centerx, move.rect.centery=(sq.rect.centerx, sq.rect.centery)
                         #reset to base square if moved pieces's new square overlaps moved piece with another piece of the same color
-                        if self.whites:
+                        if self.side=='whites':
                             self.snap_back(move,base,self.wpieces.sprites())
                         else:
                             self.snap_back(move,base,self.bpieces.sprites())
@@ -210,10 +214,9 @@ class Game():
                             pygame.sprite.groupcollide(self.wpieces, self.bpieces, False, True)
                         else:
                             pygame.sprite.groupcollide(self.wpieces, self.bpieces, True, False)
-                        self.server.send('move')
                     make_play=str(move.nature)+','+str(Game.square_size*8-move.rect.centerx)+','+str(Game.square_size*8-move.rect.centery)
                     print(make_play)
-                    self.server.send(make_play)
+                    self.last_move=make_play
                     self.update_screen()
         except UnboundLocalError:
             pass
@@ -235,4 +238,4 @@ print(side)
 session=Game(side,n)
 session.run()
 
-#i guess i need to tell the server if there was a move or not in each play
+#implement last_move
