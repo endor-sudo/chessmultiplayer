@@ -1,6 +1,5 @@
 import socket
 import threading
-import sys
 
 server="192.168.8.101"
 port=5555
@@ -20,8 +19,9 @@ players={0:'whites', 1:'blacks'}
 last_move={0:'0', 1:'0'}
 
 def client_thread(conn, player):
+    global players
+    global last_move
     conn.send(str.encode(players[player]))
-    print(str(players[player])+'sent')
     reply=""
     
     while True:
@@ -30,23 +30,27 @@ def client_thread(conn, player):
                 reply=last_move[1]
             if player==1:
                 reply=last_move[0]
-            print('reply:')
-            print(reply)
+
             conn.sendall(str.encode(reply))
             
-            last_move[player] = conn.recv(4096).decode('utf-8')
-            print('last_move[player]:')
-            print(last_move[player])
-        except Exception as e :
-            print('client_thread')
-            print(e)
+            rec_move = conn.recv(4096).decode('utf-8')
+
+            if rec_move!='':
+                last_move[player]=rec_move
+            else:
+                last_move[player]='0'
+                
+        except Exception as e:
             break
-    
     print("Lost connection")
     conn.close()
 
 current_player=0
 while True:
+    if current_player>1:
+        current_player=0
+        players={0:'whites', 1:'blacks'}
+        last_move={0:'0', 1:'0'}
     conn, addr=s.accept()
     print("Connected to:", addr)
 

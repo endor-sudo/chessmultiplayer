@@ -233,7 +233,7 @@ class Game():
 from network import Network
 
 n=Network()
-side=n.get_p()
+side=n.get_p()[:6]
 print(side)
 session=Game(side,n)
 session.run()
