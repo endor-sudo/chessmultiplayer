@@ -49,7 +49,7 @@ class Game():
     def run(self):
         while True:
             self.listen_for_commands()
-            self.update_screen()
+            self.update_screen('notme')
     def listen_for_commands(self):
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
@@ -81,7 +81,7 @@ class Game():
                     celly=Game.square_size+lin*Game.square_size*2
                     new_square=Square(self.screen, Game.square_size, cellx, celly, Game.white)
                     self.grid.add(new_square)
-    def update_screen(self):
+    def update_screen(self,playa):
             self.spawn_squares()
             self.spawn_pieces()
             self.spawn=False
@@ -132,12 +132,22 @@ class Game():
             print('depois')
             for sq in self.grid.sprites():
                 sq.draw_sq()
-            if self.side=='whites':
+            if self.side=='whites' and playa=='me':
                 for piece in self.bpieces.sprites():
                     piece.blitme()
                 for piece in self.wpieces.sprites():
                     piece.blitme()
-            else:
+            elif self.side=='whites' and playa=='notme':
+                for piece in self.wpieces.sprites():
+                    piece.blitme()
+                for piece in self.bpieces.sprites():
+                    piece.blitme()
+            elif self.side=='blacks' and playa=='notme':
+                for piece in self.bpieces.sprites():
+                    piece.blitme()
+                for piece in self.wpieces.sprites():
+                    piece.blitme()
+            elif self.side=='blacks' and playa=='me':
                 for piece in self.wpieces.sprites():
                     piece.blitme()
                 for piece in self.bpieces.sprites():
@@ -180,14 +190,16 @@ class Game():
     def moving(self):
         pos=pygame.mouse.get_pos()
         #acquire moved piece
-        for piece in self.bpieces.sprites():
-            if piece.rect.collidepoint(pos):
-                move=piece
-                break
-        for piece in self.wpieces.sprites():
-            if piece.rect.collidepoint(pos):
-                move=piece
-                break
+        if self.side=='blacks':
+            for piece in self.bpieces.sprites():
+                if piece.rect.collidepoint(pos):
+                    move=piece
+                    break
+        elif self.side=='whites':
+            for piece in self.wpieces.sprites():
+                if piece.rect.collidepoint(pos):
+                    move=piece
+                    break
         #save tuple for eventual snapback
         try:
             base=(move.rect.centerx, move.rect.centery)
@@ -217,7 +229,7 @@ class Game():
                     make_play=str(move.nature)+','+str(Game.square_size*8-move.rect.centerx)+','+str(Game.square_size*8-move.rect.centery)
                     print(make_play)
                     self.last_move=make_play
-                    self.update_screen()
+                    self.update_screen('me')
         except UnboundLocalError:
             pass
     

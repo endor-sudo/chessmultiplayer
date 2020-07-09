@@ -19,8 +19,6 @@ players={0:'whites', 1:'blacks'}
 last_move={0:'0', 1:'0'}
 
 def client_thread(conn, player):
-    global players
-    global last_move
     conn.send(str.encode(players[player]))
     reply=""
     
